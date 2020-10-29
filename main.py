@@ -1,6 +1,6 @@
 from typing import Type
 import pygame
-
+import time
 
 class Player:
 
@@ -13,22 +13,20 @@ class Player:
         if pressed[pygame.K_UP]:
             self.yPlayer -= 0.7
 
-            points = points + 1
+            points = int(points + 1 / 10)
+            print(str(points))
 
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
 
-            points = points + 1
+            points = int(points + 1 / 10)
 
         elif pressed[pygame.K_RIGHT]:
             self.xPlayer += 0.7
 
-            points = points + 1
-
         elif pressed[pygame.K_LEFT]:
             self.xPlayer -= 0.7
 
-            points = points + 1
 
         screen.blit(imgPlayer, (self.xPlayer, self.yPlayer))
 
@@ -73,8 +71,6 @@ music_menu = 'music_menu.mp3'
 music_game = 'music_game.mp3'
 music_game_over = 'music_game_over.mp3'
 pygame.init()
-pygame.mixer.music.load(music_menu)
-pygame.mixer.music.play(-1)
 pygame.display.set_caption("Frogger Game")
 pygame.display.update()
 
@@ -139,6 +135,24 @@ def is_quit():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
+
+
+def show_introduction():
+    global state
+    global done
+
+    if is_quit():
+        done = True
+        return
+
+    red = (255, 0, 0)
+    font = pygame.font.Font('freesansbold.ttf', 40)
+    title = font.render('Futlese', True, red)
+    tr_title = title.get_rect()
+    tr_title.center = (w // 2, h // 2 - 50)
+    screen.blit(title, tr_title)
+    state = 0
+    pygame.display.update()
 
 
 def menu():
@@ -346,8 +360,10 @@ def finish():
     done = True
 
 
-state = 0 ## 0: menu / 1: instructions / 2: game / 3: pause / 4: game_over / 5: finish
+'''0: menu / 1: instructions / 2: game / 3: pause / 4: game_over / 5: finish'''
+state = 0
 
+play_music(music_menu, -1)
 while not done:
     if state == 0:
         menu()
