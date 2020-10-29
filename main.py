@@ -1,5 +1,6 @@
 from typing import Type
 import pygame
+import time
 
 
 class Player:
@@ -9,13 +10,15 @@ class Player:
         self.yPlayer = 570
 
     def move(self, pressed):
-        global yB
-        global yB2
+        global frog_hop
         if pressed[pygame.K_UP]:
             self.yPlayer -= 0.7
 
+
+
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
+
 
         elif pressed[pygame.K_RIGHT]:
             self.xPlayer += 0.7
@@ -60,13 +63,18 @@ yB2 = 0 - h
 
 done = False
 pygame.init()
+import pygame
+file = 'awesomeness.mp3'
+pygame.init()
+pygame.mixer.music.load(file)
+pygame.mixer.music.play(-1)
 pygame.display.set_caption("Frogger Game")
 pygame.display.update()
 
 ## Player
 imgPlayer = pygame.image.load("player.png")
 player = Player()
-
+pygame.mixer.init()
 ## Car
 imgCar = pygame.image.load("car.png")
 cars = []
@@ -112,6 +120,7 @@ def is_quit():
 
 
 def menu():
+    pygame.mixer.music.unpause()
     global state
     global player
     player = Player()
@@ -193,13 +202,17 @@ def pause():
         font = pygame.font.Font('freesansbold.ttf', 40)
         text_instructions = font.render('Pause', True, red)
         font = pygame.font.Font('freesansbold.ttf', 18)
-        text_exit = font.render('Press esc for back to game', True, red)
+        text_back = font.render('Press esc for back to game', True, red)
+        text_menu = font.render('Press m to back to menu', True, red)
         tr_text = text_instructions.get_rect()
-        tr_exit = text_exit.get_rect()
+        tr_back = text_back.get_rect()
+        tr_menu = text_menu.get_rect()
         tr_text.center = (w // 2, h // 2 - 50)
-        tr_exit.center = (w // 2, h // 2 + 80)
+        tr_back.center = (w // 2, h // 2 + 80)
+        tr_menu.center = (w // 2, h // 2 + 120)
         screen.blit(text_instructions, tr_text)
-        screen.blit(text_exit, tr_exit)
+        screen.blit(text_back, tr_back)
+        screen.blit(text_menu, tr_menu)
 
         pressed = pygame.key.get_pressed()
 
@@ -208,6 +221,8 @@ def pause():
             return
 
         if pressed[pygame.K_m]:
+            pygame.mixer.music.load(file)
+            pygame.mixer.music.play(-1)
             state = 2
             return
 
@@ -249,12 +264,15 @@ def update_game():
             car.move()
 
             if car.intersects(player.xPlayer, player.yPlayer):
+                pygame.mixer.music.stop()
                 state = 0
 
         pressed = pygame.key.get_pressed()
 
         if pressed[pygame.K_p]:
+            pygame.mixer.music.stop()
             pause()
+            pygame.mixer.music.play()
 
         pygame.display.update()
 
@@ -291,6 +309,8 @@ def game_over():
         return
 
     if pressed[pygame.K_m]:
+        pygame.mixer.music.load(file)
+        pygame.mixer.music.play(-1)
         state = 2
         return
 
@@ -312,7 +332,12 @@ while not done:
     elif state == 3:
         instructions()
     elif state == 1:
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load('music_playing.mp3')
+        pygame.mixer.music.play(-1)
         update_game()
+        pygame.mixer.music.load('game over.mp3')
+        pygame.mixer.music.play(1)
     elif state == 0:
         game_over()
     elif state == -1:
