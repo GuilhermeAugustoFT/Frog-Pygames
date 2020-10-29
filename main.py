@@ -9,17 +9,26 @@ class Player:
         self.yPlayer = 570
 
     def move(self, pressed):
+        global points
         if pressed[pygame.K_UP]:
             self.yPlayer -= 0.7
+
+            points = points + 1
 
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
 
+            points = points + 1
+
         elif pressed[pygame.K_RIGHT]:
             self.xPlayer += 0.7
 
+            points = points + 1
+
         elif pressed[pygame.K_LEFT]:
             self.xPlayer -= 0.7
+
+            points = points + 1
 
         screen.blit(imgPlayer, (self.xPlayer, self.yPlayer))
 
@@ -65,7 +74,7 @@ music_game = 'music_game.mp3'
 music_game_over = 'music_game_over.mp3'
 pygame.init()
 pygame.mixer.music.load(music_menu)
-'''pygame.mixer.music.play(-1)'''
+pygame.mixer.music.play(-1)
 pygame.display.set_caption("Frogger Game")
 pygame.display.update()
 
@@ -73,10 +82,24 @@ pygame.display.update()
 imgPlayer = pygame.image.load("player.png")
 player = Player()
 pygame.mixer.init()
+points = 0
 
 ## Car
 imgCar = pygame.image.load("car.png")
 cars = []
+
+
+def play_music(music, loops):
+    pygame.mixer.music.load(music)
+    pygame.mixer.music.play(loops)
+
+
+def show_points():
+    global points
+    black = (0, 0, 0)
+    font = pygame.font.Font('freesansbold.ttf', 20)
+    title = font.render(str(points), True, black)
+    screen.blit(title, (20, 20))
 
 
 def initialize_cars():
@@ -220,8 +243,7 @@ def pause():
             return
 
         if pressed[pygame.K_m]:
-            pygame.mixer.music.load(music_menu)
-            pygame.mixer.music.play(-1)
+            play_music(music_menu, -1)
             state = 0
             return
 
@@ -235,6 +257,8 @@ def update_game():
     global state
     global yB
     global yB2
+    global points
+    points = 0
     yB = 0
     yB2 = 0 - h
     initialize_cars()
@@ -251,11 +275,13 @@ def update_game():
         key = pygame.key.get_pressed()
         screen.blit(background, (0, yB))
         player.move(key)
+        show_points()
         yB += 0.2
         yB2 += 0.2
         player.yPlayer += 0.2
 
         if player.yPlayer > h:
+            play_music(music_game_over, 1)
             state = 4
             return
 
@@ -263,6 +289,7 @@ def update_game():
             car.move()
 
             if car.intersects(player.xPlayer, player.yPlayer):
+                play_music(music_game_over, 1)
                 state = 4
 
         pressed = pygame.key.get_pressed()
@@ -307,6 +334,7 @@ def game_over():
         return
 
     if pressed[pygame.K_m]:
+        play_music(music_menu, -1)
         state = 0
         return
 
@@ -326,6 +354,7 @@ while not done:
     elif state == 1:
         instructions()
     elif state == 2:
+        play_music(music_game, -1)
         update_game()
     elif state == 3:
         pause()
