@@ -185,36 +185,36 @@ def instructions():
 
 
 def pause():
-    global state
-    black = (0, 0, 0)
-    red = (255, 0, 0)
-    screen.fill(black)
-    font = pygame.font.Font('freesansbold.ttf', 40)
-    text_instructions = font.render('Pause', True, red)
-    font = pygame.font.Font('freesansbold.ttf', 18)
-    text_exit = font.render('Press esc for back to game', True, red)
-    tr_text = text_instructions.get_rect()
-    tr_exit = text_exit.get_rect()
-    tr_text.center = (w // 2, h // 2 - 50)
-    tr_exit.center = (w // 2, h // 2 + 80)
-    screen.blit(text_instructions, tr_text)
-    screen.blit(text_exit, tr_exit)
+    while True:
+        global state
+        black = (0, 0, 0)
+        red = (255, 0, 0)
+        screen.fill(black)
+        font = pygame.font.Font('freesansbold.ttf', 40)
+        text_instructions = font.render('Pause', True, red)
+        font = pygame.font.Font('freesansbold.ttf', 18)
+        text_exit = font.render('Press esc for back to game', True, red)
+        tr_text = text_instructions.get_rect()
+        tr_exit = text_exit.get_rect()
+        tr_text.center = (w // 2, h // 2 - 50)
+        tr_exit.center = (w // 2, h // 2 + 80)
+        screen.blit(text_instructions, tr_text)
+        screen.blit(text_exit, tr_exit)
 
-    pressed = pygame.key.get_pressed()
+        pressed = pygame.key.get_pressed()
 
-    if is_quit():
-        state = -1
-        return
+        if is_quit():
+            state = -1
+            return
 
-    if pressed[pygame.K_m]:
-        state = 2
-        return
+        if pressed[pygame.K_m]:
+            state = 2
+            return
 
-    if pressed[pygame.K_ESCAPE]:
-        state = 1
-        return
+        if pressed[pygame.K_ESCAPE]:
+            break
 
-    pygame.display.update()
+        pygame.display.update()
 
 
 def update_game():
@@ -254,8 +254,7 @@ def update_game():
         pressed = pygame.key.get_pressed()
 
         if pressed[pygame.K_p]:
-            state = 4
-            return
+            pause()
 
         pygame.display.update()
 
