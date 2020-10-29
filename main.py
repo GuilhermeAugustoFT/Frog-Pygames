@@ -1,6 +1,5 @@
 from typing import Type
 import pygame
-import time
 
 
 class Player:
@@ -10,15 +9,11 @@ class Player:
         self.yPlayer = 570
 
     def move(self, pressed):
-        global frog_hop
         if pressed[pygame.K_UP]:
             self.yPlayer -= 0.7
 
-
-
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
-
 
         elif pressed[pygame.K_RIGHT]:
             self.xPlayer += 0.7
@@ -48,12 +43,13 @@ class Car:
         self.x += self.speed
         screen.blit(imgCar, (self.x, self.y))
 
-    def intersects(self, xPlayer, yPlayer):
-        if (yPlayer <= self.y + 15) and (yPlayer >= self.y - 15):
-            if (xPlayer >= self.x - 4) and (xPlayer <= self.x + 4):
+    def intersects(self, x_player, y_player):
+        if (x_player <= self.y + 15) and (y_player >= self.y - 15):
+            if (x_player >= self.x - 4) and (y_player <= self.x + 4):
                 return True
 
 
+## Background
 background = pygame.image.load("background.png")
 background_size = background.get_size()
 w, h = background_size
@@ -61,12 +57,14 @@ screen = pygame.display.set_mode((w, h))
 yB = 0
 yB2 = 0 - h
 
+## Window
 done = False
 pygame.init()
-import pygame
-file = 'awesomeness.mp3'
+music_menu = 'music_menu.mp3'
+music_game = 'music_game.mp3'
+music_game_over = 'music_game_over.mp3'
 pygame.init()
-pygame.mixer.music.load(file)
+pygame.mixer.music.load(music_menu)
 pygame.mixer.music.play(-1)
 pygame.display.set_caption("Frogger Game")
 pygame.display.update()
@@ -75,6 +73,7 @@ pygame.display.update()
 imgPlayer = pygame.image.load("player.png")
 player = Player()
 pygame.mixer.init()
+
 ## Car
 imgCar = pygame.image.load("car.png")
 cars = []
@@ -82,35 +81,35 @@ cars = []
 
 def initialize_cars():
     global cars
-    carsAux = []
+    cars_aux = []
     x = 0
     ## Linha 1
     for i in range(0, 16):
         x += 120
-        carsAux.append(Car(x, 493))
+        cars_aux.append(Car(x, 493))
 
     x = 0
 
     ## Linha 2
     for i in range(0, 16):
         x += 150
-        carsAux.append(Car(x, 449))
+        cars_aux.append(Car(x, 449))
 
     x = 0
 
     ## Linha 3
     for i in range(0, 16):
         x += 180
-        carsAux.append(Car(x, 358))
+        cars_aux.append(Car(x, 358))
 
     x = 0
 
     ## Linha 4
     for i in range(0, 16):
         x += 140
-        carsAux.append(Car(x, 398))
+        cars_aux.append(Car(x, 398))
 
-    cars = carsAux
+    cars = cars_aux
 
 
 def is_quit():
@@ -221,7 +220,7 @@ def pause():
             return
 
         if pressed[pygame.K_m]:
-            pygame.mixer.music.load(file)
+            pygame.mixer.music.load(music_menu)
             pygame.mixer.music.play(-1)
             state = 2
             return
@@ -309,7 +308,7 @@ def game_over():
         return
 
     if pressed[pygame.K_m]:
-        pygame.mixer.music.load(file)
+        pygame.mixer.music.load(music_menu)
         pygame.mixer.music.play(-1)
         state = 2
         return
@@ -333,10 +332,10 @@ while not done:
         instructions()
     elif state == 1:
         pygame.mixer.music.stop()
-        pygame.mixer.music.load('music_playing.mp3')
+        pygame.mixer.music.load(music_game)
         pygame.mixer.music.play(-1)
         update_game()
-        pygame.mixer.music.load('game over.mp3')
+        pygame.mixer.music.load(music_game_over)
         pygame.mixer.music.play(1)
     elif state == 0:
         game_over()
