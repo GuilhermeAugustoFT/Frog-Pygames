@@ -26,7 +26,6 @@ class Player:
         elif pressed[pygame.K_LEFT]:
             self.xPlayer -= 0.7
 
-
         screen.blit(imgPlayer, (self.xPlayer, self.yPlayer))
 
 
@@ -62,6 +61,34 @@ class Car:
                 return True
 
 
+class Wood:
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.speed = 0.5
+
+    def move(self):
+        if self.y > h:
+            self.y -= h
+
+        self.y += 0.2
+        if self.x == 490:
+            self.x = -self.x + 470
+
+        self.x += self.speed
+        screen.blit(imgWood, (self.x, self.y))
+
+    def move_simple(self):
+        if self.x == 490:
+            self.x = -self.x + 470
+
+        self.x += self.speed
+        screen.blit(imgWood, (self.x, self.y))
+
+
+
+
 ## Background
 background = pygame.image.load("background.png")
 background_size = background.get_size()
@@ -91,6 +118,10 @@ points = 0
 imgCar = pygame.image.load("car.png")
 cars = []
 
+## Wood
+imgWood = pygame.image.load("wood.png")
+woods = []
+
 state = 0
 
 
@@ -105,6 +136,88 @@ def show_points():
     font = pygame.font.Font('machine_gunk.ttf', 20)
     title = font.render(str(points), True, black)
     screen.blit(title, (20, 20))
+
+
+def initialize_woods():
+    global woods
+    woods_aux = []
+
+    x = 100
+
+    ## Linha 1
+    for i in range(0, 16):
+        x += 100
+        woods_aux.append(Wood(x, 255))
+
+    x = 0
+
+    ## Linha 2
+    for i in range(0, 16):
+        x += 100
+        woods_aux.append(Wood(x, 235))
+
+    x = 200
+
+    ## Linha 3
+    for i in range(0, 16):
+        x += 100
+        woods_aux.append(Wood(x, 215))
+
+    x = 300
+
+    ## Linha 4
+    for i in range(0, 16):
+        x += 100
+        woods_aux.append(Wood(x, 195))
+
+    x = 150
+
+    ## Linha 5
+    for i in range(0, 16):
+        x += 100
+        woods_aux.append(Wood(x, 175))
+
+    x = 70
+
+    ## Linha 6
+    for i in range(0, 16):
+        x += 120
+        woods_aux.append(Wood(x, 155))
+
+    x = 120
+
+    ## Linha 7
+    for i in range(0, 16):
+        x += 80
+        woods_aux.append(Wood(x, 135))
+
+    x = 180
+
+    ## Linha 8
+    for i in range(0, 16):
+        x += 120
+        woods_aux.append(Wood(x, 115))
+
+    x = 140
+
+    ## Linha 9
+    for i in range(0, 16):
+        x += 110
+        woods_aux.append(Wood(x, 95))
+
+    x = 150
+
+    ## Linha 10
+    for i in range(0, 16):
+        x += 100
+    woods_aux.append(Wood(x, 75))
+
+    ## Linha 11
+    for i in range(0, 16):
+        x += 100
+    woods_aux.append(Wood(x, 20))
+
+    woods = woods_aux
 
 
 def initialize_cars():
@@ -145,16 +258,33 @@ def is_quit():
         if event.type == pygame.QUIT:
             return True
 
+
 def menu():
-    clock = pygame.time.Clock()
+    initialize_woods()
     initialize_cars()
     global state
+    global yB
+    global yB2
     while True:
-        global player
-        player = Player()
         black = (0, 0, 0)
-        screen.blit(background, (0, 0))
+        if yB2 > 0:
+            yB = 0
+            yB2 = 0 - h
+
+        screen.blit(background, (0, yB2))
+
+        screen.blit(background, (0, yB))
+        yB += 0.2
+        yB2 += 0.2
+
         pygame.init()
+
+        for car in cars:
+            car.move()
+
+        for wood in woods:
+            wood.move()
+
         font = pygame.font.Font('machine_gunk.ttf', 70)
         title = font.render('Frogger Game', True, black)
         font = pygame.font.Font('machine_gunk.ttf', 20)
@@ -169,11 +299,7 @@ def menu():
         '''tr_instructions.center = (w // 2, h // 2 + 150)'''
         screen.blit(title, tr_title)
         screen.blit(sub_title, tr_sub_title)
-        screen.blit(imgPlayer, (player.xPlayer, player.yPlayer))
         '''screen.blit(instructions_txt, tr_instructions)'''
-
-        for car in cars:
-            car.move_simple()
 
         pressed = pygame.key.get_pressed()
 
@@ -289,7 +415,6 @@ def pause():
             return
 
         if pressed[pygame.K_ESCAPE]:
-            play_music(music_game, -1)
             break
 
         pygame.display.update()
@@ -304,6 +429,7 @@ def update_game():
     yB = 0
     yB2 = 0 - h
     initialize_cars()
+    initialize_woods()
     while state == 2:
         if is_quit():
             state = 5
@@ -317,6 +443,7 @@ def update_game():
         key = pygame.key.get_pressed()
         screen.blit(background, (0, yB))
         player.move(key)
+        print(player.yPlayer)
         show_points()
         yB += 0.2
         yB2 += 0.2
@@ -334,6 +461,9 @@ def update_game():
                 play_music(music_game_over, 1)
                 state = 4
 
+        for wood in woods:
+            wood.move()
+
         pressed = pygame.key.get_pressed()
 
         if pressed[pygame.K_p]:
@@ -350,11 +480,11 @@ def game_over():
         if event.type == pygame.QUIT:
             state = 5
             return
-    black = (0, 0, 0)
+    white = (255, 255, 255)
     red = (255, 0, 0)
-    screen.fill(black)
+    screen.fill(white)
     font = pygame.font.Font('machine_gunk.ttf', 50)
-    text = font.render('You lose !', True, red)
+    text = font.render('Game Over', True, red)
     font = pygame.font.Font('machine_gunk.ttf', 20)
     text2 = font.render('Press c to play again or m for go to menu', True, red)
     text_rect = text.get_rect()
@@ -397,7 +527,7 @@ while not done:
     elif state == 1:
         instructions()
     elif state == 2:
-        play_music(music_game, -1)
+        pygame.mixer.music.stop()
         update_game()
     elif state == 3:
         pause()
