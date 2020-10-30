@@ -5,8 +5,8 @@ import time
 class Player:
 
     def __init__(self):
-        self.xPlayer = w / 2
-        self.yPlayer = 570
+        self.xPlayer = w / 2 - 20
+        self.yPlayer = 570 - 20
 
     def move(self, pressed):
         global points
@@ -14,7 +14,6 @@ class Player:
             self.yPlayer -= 0.7
 
             points = int(points + 1 / 10)
-            print(str(points))
 
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
@@ -50,9 +49,16 @@ class Car:
         self.x += self.speed
         screen.blit(imgCar, (self.x, self.y))
 
+    def move_simple(self):
+        if self.x == 490:
+            self.x = -self.x + 470
+
+        self.x += self.speed
+        screen.blit(imgCar, (self.x, self.y))
+
     def intersects(self, x_player, y_player):
-        if (y_player <= self.y + 15) and (y_player >= self.y - 15):
-            if (x_player >= self.x - 4) and (x_player <= self.x + 4):
+        if (y_player <= self.y + 20) and (y_player >= self.y - 20):
+            if (x_player >= self.x - 20) and (x_player <= self.x + 20):
                 return True
 
 
@@ -70,12 +76,13 @@ pygame.init()
 music_menu = 'music_menu.mp3'
 music_game = 'music_game.mp3'
 music_game_over = 'music_game_over.mp3'
+music_paused = 'music_paused.mp3'
 pygame.init()
 pygame.display.set_caption("Frogger Game")
 pygame.display.update()
 
 ## Player
-imgPlayer = pygame.image.load("player.png")
+imgPlayer = pygame.image.load("frog.png")
 player = Player()
 pygame.mixer.init()
 points = 0
@@ -83,6 +90,8 @@ points = 0
 ## Car
 imgCar = pygame.image.load("car.png")
 cars = []
+
+state = 0
 
 
 def play_music(music, loops):
@@ -93,7 +102,7 @@ def play_music(music, loops):
 def show_points():
     global points
     black = (0, 0, 0)
-    font = pygame.font.Font('freesansbold.ttf', 20)
+    font = pygame.font.Font('machine_gunk.ttf', 20)
     title = font.render(str(points), True, black)
     screen.blit(title, (20, 20))
 
@@ -136,64 +145,55 @@ def is_quit():
         if event.type == pygame.QUIT:
             return True
 
-
-def show_introduction():
-    global state
-    global done
-
-    if is_quit():
-        done = True
-        return
-
-    red = (255, 0, 0)
-    font = pygame.font.Font('freesansbold.ttf', 40)
-    title = font.render('Futlese', True, red)
-    tr_title = title.get_rect()
-    tr_title.center = (w // 2, h // 2 - 50)
-    screen.blit(title, tr_title)
-    state = 0
-    pygame.display.update()
-
-
 def menu():
-    pygame.mixer.music.unpause()
+    clock = pygame.time.Clock()
+    initialize_cars()
     global state
-    global player
-    player = Player()
-    black = (0, 0, 0)
-    red = (255, 0, 0)
-    screen.fill(black)
-    font = pygame.font.Font('freesansbold.ttf', 40)
-    title = font.render('Frogger Game', True, red)
-    font = pygame.font.Font('freesansbold.ttf', 20)
-    sub_title = font.render('Press g for play!', True, red)
-    font = pygame.font.Font('freesansbold.ttf', 18)
-    instructions_txt = font.render('Press i for instructions', True, red)
-    tr_title = title.get_rect()
-    tr_sub_title = sub_title.get_rect()
-    tr_instructions = instructions_txt.get_rect()
-    tr_title.center = (w // 2, h // 2 - 50)
-    tr_sub_title.center = (w // 2, h // 2)
-    tr_instructions.center = (w // 2, h // 2 + 150)
-    screen.blit(title, tr_title)
-    screen.blit(sub_title, tr_sub_title)
-    screen.blit(instructions_txt, tr_instructions)
+    while True:
+        global player
+        player = Player()
+        black = (0, 0, 0)
+        screen.blit(background, (0, 0))
+        pygame.init()
+        font = pygame.font.Font('machine_gunk.ttf', 70)
+        title = font.render('Frogger Game', True, black)
+        font = pygame.font.Font('machine_gunk.ttf', 20)
+        sub_title = font.render('Press g for play !', True, black)
+        '''font = pygame.font.Font('freesansbold.ttf', 18)'''
+        '''instructions_txt = font.render('Press i for instructions', True, red)'''
+        tr_title = title.get_rect()
+        tr_sub_title = sub_title.get_rect()
+        '''tr_instructions = instructions_txt.get_rect()'''
+        tr_title.center = (w // 2, h // 2 - 50)
+        tr_sub_title.center = (w // 2, h // 2)
+        '''tr_instructions.center = (w // 2, h // 2 + 150)'''
+        screen.blit(title, tr_title)
+        screen.blit(sub_title, tr_sub_title)
+        screen.blit(imgPlayer, (player.xPlayer, player.yPlayer))
+        '''screen.blit(instructions_txt, tr_instructions)'''
 
-    pressed = pygame.key.get_pressed()
+        for car in cars:
+            car.move_simple()
 
-    if pressed[pygame.K_g]:
-        state = 2
-        return
+        pressed = pygame.key.get_pressed()
 
-    if pressed[pygame.K_i]:
-        state = 1
-        return
+        if is_quit():
+            state = 5
+            return
 
-    if is_quit():
-        state = 5
-        return
+        if pressed[pygame.K_g]:
+            state = 2
+            return
 
-    pygame.display.update()
+        if pressed[pygame.K_i]:
+            state = 1
+            return
+
+        if is_quit():
+            state = 5
+            return
+
+        pygame.display.update()
 
 
 def instructions():
@@ -230,22 +230,25 @@ def instructions():
 
 
 def pause():
+    red = (255, 0, 0)
+    font = pygame.font.Font('machine_gunk.ttf', 18)
+    text_back = font.render('Press ESC to resume', True, red)
+    white = (255, 255, 255)
+    color = white
     while True:
         global state
         black = (0, 0, 0)
-        red = (255, 0, 0)
         screen.fill(black)
-        font = pygame.font.Font('freesansbold.ttf', 40)
-        text_instructions = font.render('Pause', True, red)
-        font = pygame.font.Font('freesansbold.ttf', 18)
-        text_back = font.render('Press esc for back to game', True, red)
-        text_menu = font.render('Press m to back to menu', True, red)
+        font = pygame.font.Font('machine_gunk.ttf', 60)
+        text_instructions = font.render('Paused', True, white)
+        font = pygame.font.Font('machine_gunk.ttf', 18)
+        text_menu = font.render('Press M to back to menu', True, color)
         tr_text = text_instructions.get_rect()
         tr_back = text_back.get_rect()
         tr_menu = text_menu.get_rect()
-        tr_text.center = (w // 2, h // 2 - 50)
-        tr_back.center = (w // 2, h // 2 + 80)
-        tr_menu.center = (w // 2, h // 2 + 120)
+        tr_text.center = (w // 2, h // 2 - 200)
+        tr_back.center = (w // 2, h // 2 - 100)
+        tr_menu.center = (w // 2, h // 2  - 50)
         screen.blit(text_instructions, tr_text)
         screen.blit(text_back, tr_back)
         screen.blit(text_menu, tr_menu)
@@ -256,12 +259,37 @@ def pause():
             state = 5
             return
 
+        if pressed[pygame.K_DOWN]:
+            color = red
+            play_music(music_paused, 1)
+            text_back = font.render('Press ESC to resume', True, white)
+            text_menu = font.render('Press M to back to menu', True, color)
+            tr_back = text_back.get_rect()
+            tr_menu = text_menu.get_rect()
+            tr_back.center = (w // 2, h // 2 - 100)
+            tr_menu.center = (w // 2, h // 2 - 50)
+            screen.blit(text_back, tr_back)
+            screen.blit(text_menu, tr_menu)
+
+        if pressed[pygame.K_UP]:
+            color = white
+            play_music(music_paused, 1)
+            text_back = font.render('Press ESC to resume', True, red)
+            text_menu = font.render('Press M to back to menu', True, color)
+            tr_back = text_back.get_rect()
+            tr_menu = text_menu.get_rect()
+            tr_back.center = (w // 2, h // 2 - 100)
+            tr_menu.center = (w // 2, h // 2 - 50)
+            screen.blit(text_back, tr_back)
+            screen.blit(text_menu, tr_menu)
+
         if pressed[pygame.K_m]:
             play_music(music_menu, -1)
             state = 0
             return
 
         if pressed[pygame.K_ESCAPE]:
+            play_music(music_game, -1)
             break
 
         pygame.display.update()
@@ -311,7 +339,6 @@ def update_game():
         if pressed[pygame.K_p]:
             pygame.mixer.music.stop()
             pause()
-            pygame.mixer.music.play()
 
         pygame.display.update()
 
@@ -326,9 +353,9 @@ def game_over():
     black = (0, 0, 0)
     red = (255, 0, 0)
     screen.fill(black)
-    font = pygame.font.Font('freesansbold.ttf', 30)
-    text = font.render('You lose!', True, red)
-    font = pygame.font.Font('freesansbold.ttf', 20)
+    font = pygame.font.Font('machine_gunk.ttf', 50)
+    text = font.render('You lose !', True, red)
+    font = pygame.font.Font('machine_gunk.ttf', 20)
     text2 = font.render('Press c to play again or m for go to menu', True, red)
     text_rect = text.get_rect()
     text_rect2 = text2.get_rect()
@@ -361,7 +388,7 @@ def finish():
 
 
 '''0: menu / 1: instructions / 2: game / 3: pause / 4: game_over / 5: finish'''
-state = 0
+'''state = 0'''
 
 play_music(music_menu, -1)
 while not done:
