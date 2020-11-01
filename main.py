@@ -8,6 +8,14 @@ class Player:
     def __init__(self):
         self.xPlayer = w / 2 - 20
         self.yPlayer = 300 - 20
+        self.speed = 0.5
+
+    def moveLikeLog(self):
+
+        if self.xPlayer == 490:
+            self.xPlayer = -self.x + 470
+
+        self.xPlayer += self.speed
 
     def move(self, pressed):
         global points
@@ -18,8 +26,6 @@ class Player:
 
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
-
-            points = int(points + 1 / 10)
 
         elif pressed[pygame.K_RIGHT]:
             self.xPlayer += 0.7
@@ -86,6 +92,11 @@ class Wood:
 
         self.x += self.speed
         screen.blit(imgWood, (self.x, self.y))
+
+    def intersects(self, x_player, y_player):
+        if (y_player <= self.y + 20) and (y_player >= self.y - 20):
+            if (x_player >= self.x - 20) and (x_player <= self.x + 20):
+                return True
 
 
 
@@ -465,6 +476,13 @@ def update_game():
 
         for wood in woods:
             wood.move()
+
+            if wood.intersects(player.xPlayer, player.yPlayer):
+                player.moveLikeLog()
+            elif player.yPlayer == wood.y: ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
+                play_music(music_game_over, 1)
+                state = 4
+
 
         pressed = pygame.key.get_pressed()
 
