@@ -2,6 +2,7 @@ from typing import Type
 import pygame
 import time
 
+
 class Player:
 
     def __init__(self):
@@ -94,6 +95,7 @@ background = pygame.image.load("background.png")
 background_size = background.get_size()
 w, h = background_size
 screen = pygame.display.set_mode((w, h))
+
 yB = 0
 yB2 = 0 - h
 
