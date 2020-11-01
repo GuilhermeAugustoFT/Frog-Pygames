@@ -1,13 +1,7 @@
 import pygame as pg
 import os
-import socketio
-
-
 
 def main():
-
-    sio = socketio.Client()
-    sio.connect('http://localhost:5000')
     ## Prepara tela
     screen = pg.display.set_mode((400, 300))
     white = (255, 255, 255)
@@ -50,7 +44,6 @@ def main():
                     ## Usuario apertou enter
                     if event.key == pg.K_RETURN:
                         print(text)
-                        sio.emit("registerUser", {"nome": text})
                         pg.quit()
                         os.system('python main.py')
 
@@ -80,17 +73,4 @@ if __name__ == '__main__':
     main()
     pg.quit()
 
-@sio.on("registerUser")
-def response(res):
-    print(res)
-
-
-@sio.on('autenticateUser')
-def response(res):
-    print(res)
-
-
-@sio.on('getUsers')
-def response(res):
-    print(res)
 

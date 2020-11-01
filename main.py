@@ -484,13 +484,11 @@ def update_game():
         for wood in woods:
             wood.move()
 
-
             if wood.intersects(player.xPlayer, player.yPlayer):
                 player.moveLikeLog()
-            elif waterRange - 230 < player.yPlayer < waterRange: ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
+            elif waterRange - 230 < player.yPlayer < waterRange + 20: ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
                 play_music(music_game_over, 1)
                 state = 4
-
 
         pressed = pygame.key.get_pressed()
 
