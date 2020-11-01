@@ -7,7 +7,7 @@ class Player:
 
     def __init__(self):
         self.xPlayer = w / 2 - 20
-        self.yPlayer = 570 - 20
+        self.yPlayer = 300 - 20
 
     def move(self, pressed):
         global points
