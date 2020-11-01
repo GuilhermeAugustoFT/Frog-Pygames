@@ -75,6 +75,7 @@ class Wood:
         self.y = y
         self.speed = 0.5
 
+
     def move(self):
         if self.y > h:
             self.y -= h
@@ -107,6 +108,7 @@ background_size = background.get_size()
 w, h = background_size
 screen = pygame.display.set_mode((w, h))
 
+waterRange = 230
 yB = 0
 yB2 = 0 - h
 
@@ -278,11 +280,13 @@ def menu():
     global state
     global yB
     global yB2
+
     while True:
         black = (0, 0, 0)
         if yB2 > 0:
             yB = 0
             yB2 = 0 - h
+
 
         screen.blit(background, (0, yB2))
 
@@ -441,6 +445,7 @@ def update_game():
     points = 0
     yB = 0
     yB2 = 0 - h
+    waterRange = 230
     initialize_cars()
     initialize_woods()
     while state == 2:
@@ -456,10 +461,12 @@ def update_game():
         key = pygame.key.get_pressed()
         screen.blit(background, (0, yB))
         player.move(key)
-        print(player.yPlayer)
+
         show_points()
         yB += 0.2
         yB2 += 0.2
+        waterRange += 0.2
+
         player.yPlayer += 0.2
 
         if player.yPlayer > h:
@@ -477,9 +484,10 @@ def update_game():
         for wood in woods:
             wood.move()
 
+
             if wood.intersects(player.xPlayer, player.yPlayer):
                 player.moveLikeLog()
-            elif player.yPlayer == wood.y: ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
+            elif waterRange - 230 < player.yPlayer < waterRange: ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
                 play_music(music_game_over, 1)
                 state = 4
 
