@@ -1,7 +1,4 @@
-from typing import Type
 import pygame
-import time
-
 
 
 class Player:
@@ -23,10 +20,15 @@ class Player:
         if pressed[pygame.K_UP]:
             self.yPlayer -= 0.7
 
-            points = int(points + 1 / 10)
+            points = points + 1 / 10
 
         elif pressed[pygame.K_DOWN]:
             self.yPlayer += 0.7
+
+            if points != 0:
+                points -= 1 / 10
+                if points < 0:
+                    points = 0
 
         elif pressed[pygame.K_RIGHT]:
             self.xPlayer += 0.7
@@ -76,7 +78,6 @@ class Wood:
         self.y = y
         self.speed = 0.5
 
-
     def move(self):
         if self.y > h:
             self.y -= h
@@ -96,11 +97,9 @@ class Wood:
         screen.blit(imgWood, (self.x, self.y))
 
     def intersects(self, x_player, y_player):
-        if (y_player <= self.y + 20) and (y_player >= self.y - 20):
+        if (y_player <= self.y + 10) and (y_player >= self.y - 25):
             if (x_player >= self.x - 20) and (x_player <= self.x + 20):
                 return True
-
-
 
 
 ## Background
@@ -150,7 +149,7 @@ def show_points():
     global points
     black = (0, 0, 0)
     font = pygame.font.Font('machine_gunk.ttf', 20)
-    title = font.render(str(points), True, black)
+    title = font.render(str(int(points)), True, black)
     screen.blit(title, (20, 20))
 
 
@@ -288,7 +287,6 @@ def menu():
             yB = 0
             yB2 = 0 - h
 
-
         screen.blit(background, (0, yB2))
 
         screen.blit(background, (0, yB))
@@ -392,7 +390,7 @@ def pause():
         tr_menu = text_menu.get_rect()
         tr_text.center = (w // 2, h // 2 - 200)
         tr_back.center = (w // 2, h // 2 - 100)
-        tr_menu.center = (w // 2, h // 2  - 50)
+        tr_menu.center = (w // 2, h // 2 - 50)
         screen.blit(text_instructions, tr_text)
         screen.blit(text_back, tr_back)
         screen.blit(text_menu, tr_menu)
@@ -438,7 +436,19 @@ def pause():
         pygame.display.update()
 
 
+esta_no_tronco = False
+
+
+'''def esta_no_tronco(x, y):
+    for wood in woods:
+        if wood.intersects(x, y):
+            return True'''
+
+
+
+
 def update_game():
+    global esta_no_tronco
     global state
     global yB
     global yB2
@@ -487,9 +497,16 @@ def update_game():
 
             if wood.intersects(player.xPlayer, player.yPlayer):
                 player.moveLikeLog()
-            elif waterRange - 230 < player.yPlayer < waterRange + 20: ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
-                play_music(music_game_over, 1)
-                state = 4
+                esta_no_tronco = True
+            else:
+                esta_no_tronco = False
+
+            if waterRange - 230 < player.yPlayer < waterRange + 20:  ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
+                if not esta_no_tronco:
+                    play_music(music_game_over, 1)
+                    state = 4
+
+
 
         pressed = pygame.key.get_pressed()
 

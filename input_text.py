@@ -5,7 +5,11 @@ import json
 
 print("\nBem-vindo ao Frogger Game")
 
+'''text = ""'''
+nome = ""
+
 def login():
+    global nome
     res = input ("\nJá possui conta? (S / N) ")
     if res == "S":
         print("\n----- Login -----")
@@ -16,6 +20,10 @@ def login():
         json_string = json.dumps(response.json())
         response_dict = json.loads(json_string)
         if response_dict['message'] == 200:
+            response = requests.get("http://localhost:5000/api/getPlayer/" + nome)
+            json_string = json.dumps(response.json())
+            response_dict = json.loads(json_string)
+            '''text = response_dict['nickname']'''
             return
         else:
             print("\nNome ou senha incorretos!")
@@ -83,7 +91,7 @@ def main():
                     ## Usuario apertou enter
                     if event.key == pg.K_RETURN:
                         print(text)
-                        '''requests.post("http:localhost:5000/api/insertPlayer", json={"nome": "afdsfs", "pontuacao": 1000})'''
+                        requests.put("http:localhost:5000/api/updatePlayer", json={"nome": nome, "nickname": text})
                         pg.quit()
                         os.system('python main.py')
 
@@ -110,6 +118,7 @@ def main():
 ## Para rodar programa
 if __name__ == '__main__':
     login()
+
     pg.init()
     main()
     pg.quit()
