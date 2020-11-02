@@ -1,5 +1,44 @@
 import pygame as pg
 import os
+import requests
+import json
+
+print("\nBem-vindo ao Frogger Game")
+
+def login():
+    res = input ("\nJá possui conta? (S / N) ")
+    if res == "S":
+        print("\n----- Login -----")
+        nome = input("\nDigite seu nome: ")
+        senha = input("Digite sua senha: ")
+        json_player = json.dumps({"nome": nome, "senha": senha})
+        response = requests.post("http://localhost:5000/api/autenticatePlayer", json=json_player)
+        json_string = json.dumps(response.json())
+        response_dict = json.loads(json_string)
+        if response_dict['message'] == 200:
+            return
+        else:
+            print("\nNome ou senha incorretos!")
+            login()
+    elif res == "N":
+        print("\n----- Registro de Jogador -----")
+        nome = input("\nDigite um nome: ")
+        nickname = input("Digite um nickname: ")
+        senha = input("Digite uma senha: ")
+        json_player = json.dumps({"nome": nome, "senha": senha, "nickname": nickname, "pontuacao": 100})
+        response = requests.post("http://localhost:5000/api/insertPlayer", json=json_player)
+        '''json_string = json.dumps(response.json())
+        response_dict = json.loads(json_string)'''
+
+        '''if response_dict['message'] == 500:
+            print("\nNome de usuário já existente! Tente outro")
+            login()'''
+
+        login()
+    else:
+        print("\nDigite S ou N")
+        login()
+
 
 def main():
     ## Prepara tela
@@ -44,6 +83,7 @@ def main():
                     ## Usuario apertou enter
                     if event.key == pg.K_RETURN:
                         print(text)
+                        '''requests.post("http:localhost:5000/api/insertPlayer", json={"nome": "afdsfs", "pontuacao": 1000})'''
                         pg.quit()
                         os.system('python main.py')
 
@@ -69,6 +109,7 @@ def main():
 
 ## Para rodar programa
 if __name__ == '__main__':
+    login()
     pg.init()
     main()
     pg.quit()
