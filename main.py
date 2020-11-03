@@ -1,4 +1,5 @@
 import pygame
+import random
 import time
 from typing import Type
 
@@ -49,11 +50,15 @@ class Car:
         self.x = x
         self.y = y
         self.speed = 0.5
+        self.first = False
 
     def move(self):
+        global y_cars
+        global cars
 
         if self.y > h:
             self.y -= h
+            self.x = 0 - random.randint(0, 11) * 287
 
         self.y += 0.2
         if self.x == 490:
@@ -85,6 +90,7 @@ class Wood:
     def move(self):
         if self.y > h:
             self.y -= h
+            self.x += random.randint(0, 4) * 10
 
         self.y += 0.2
         if self.x == 490:
@@ -157,8 +163,12 @@ def show_points():
     screen.blit(title, (20, 20))
 
 
+y_woods = 248
+
+
 def initialize_woods():
     global woods
+    global y_woods
     woods_aux = []
 
     x = 100
@@ -228,35 +238,40 @@ def initialize_woods():
     woods = woods_aux
 
 
+y_cars = 493
+
+
 def initialize_cars():
     global cars
+    global y_cars
     cars_aux = []
     x = 0
+
     ## Linha 1
     for i in range(0, 16):
-        x += 120
-        cars_aux.append(Car(x, 493))
+        x += (random.randint(1, 9)) * 57
+        cars_aux.append(Car(x, y_cars))
 
     x = 0
 
     ## Linha 2
     for i in range(0, 16):
-        x += 150
-        cars_aux.append(Car(x, 449))
+        x += (random.randint(2, 9)) * 57
+        cars_aux.append(Car(x, y_cars - 44))
 
     x = 0
 
     ## Linha 3
     for i in range(0, 16):
-        x += 180
-        cars_aux.append(Car(x, 365))
+        x += (random.randint(2, 9)) * 57
+        cars_aux.append(Car(x, y_cars - 44 * 2))
 
     x = 0
 
     ## Linha 4
     for i in range(0, 16):
-        x += 140
-        cars_aux.append(Car(x, 398))
+        x += (random.randint(2, 9)) * 57
+        cars_aux.append(Car(x, y_cars - 44 * 3))
 
     cars = cars_aux
 
@@ -457,7 +472,6 @@ def update_game():
     initialize_woods()
     far_north = 35
     far_south = 249
-
     position_log = 0
     while state == 2:
         if is_quit():
@@ -484,7 +498,7 @@ def update_game():
             cont += 1
 
         player.move(key)
-        if(player.yPlayer < far_north) and player.first_Time:
+        if (player.yPlayer < far_north) and player.first_Time:
             player.yPlayer = far_north - 10
             player.first_Time = False
             far_south = player.yPlayer - 368
@@ -496,7 +510,6 @@ def update_game():
         yB2 += 0.2
         far_south += 0.2
         far_north += 0.2
-
         player.yPlayer += 0.2
 
         if player.yPlayer > h:
@@ -530,9 +543,6 @@ def update_game():
 
         if far_north < 0:
             player.first_Time = True
-
-
-
 
         clock.tick(200)
         pygame.display.update()
