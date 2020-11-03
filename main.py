@@ -1,7 +1,5 @@
 import pygame
 import random
-import time
-from typing import Type
 
 
 class Player:
@@ -13,13 +11,10 @@ class Player:
         self.move_like_log = False
         self.first_Time = True
 
-    def moveLikeLog(self):
-        self.move_like_log = True
-
     def move(self, pressed):
         global points
 
-        if self.move_like_log == True:
+        if self.move_like_log:
             self.xPlayer += 0.5
 
         if pressed[pygame.K_UP]:
@@ -117,8 +112,6 @@ background = pygame.image.load("background.png")
 background_size = background.get_size()
 w, h = background_size
 screen = pygame.display.set_mode((w, h))
-
-waterRange = 230
 yB = 0
 yB2 = 0 - h
 
@@ -141,13 +134,19 @@ points = 0
 
 ## Car
 imgCar = pygame.image.load("car.png")
+y_cars = 493
 cars = []
 
 ## Wood
 imgWood = pygame.image.load("wood.png")
 woods = []
+previous_position_log = 0
 
+## State
 state = 0
+
+## Clock
+clock = pygame.time.Clock()
 
 
 def play_music(music, loops):
@@ -163,12 +162,8 @@ def show_points():
     screen.blit(title, (20, 20))
 
 
-y_woods = 248
-
-
 def initialize_woods():
     global woods
-    global y_woods
     woods_aux = []
 
     x = 100
@@ -238,9 +233,6 @@ def initialize_woods():
     woods = woods_aux
 
 
-y_cars = 493
-
-
 def initialize_cars():
     global cars
     global y_cars
@@ -282,16 +274,12 @@ def is_quit():
             return True
 
 
-clock = pygame.time.Clock()
-
-
 def menu():
     initialize_woods()
     initialize_cars()
     global state
     global yB
     global yB2
-
     while True:
         black = (0, 0, 0)
         if yB2 > 0:
@@ -316,17 +304,12 @@ def menu():
         title = font.render('Frogger Game', True, black)
         font = pygame.font.Font('machine_gunk.ttf', 20)
         sub_title = font.render('Press g for play !', True, black)
-        '''font = pygame.font.Font('freesansbold.ttf', 18)'''
-        '''instructions_txt = font.render('Press i for instructions', True, red)'''
         tr_title = title.get_rect()
         tr_sub_title = sub_title.get_rect()
-        '''tr_instructions = instructions_txt.get_rect()'''
         tr_title.center = (w // 2, h // 2 - 50)
         tr_sub_title.center = (w // 2, h // 2)
-        '''tr_instructions.center = (w // 2, h // 2 + 150)'''
         screen.blit(title, tr_title)
         screen.blit(sub_title, tr_sub_title)
-        '''screen.blit(instructions_txt, tr_instructions)'''
 
         pressed = pygame.key.get_pressed()
 
@@ -347,10 +330,11 @@ def menu():
             return
 
         pygame.display.update()
-        clock.tick(200)
+        clock.tick(500)
 
 
-def instructions():
+## Precisamos fazer a tela de help e ajuda
+'''def instructions():
     global state
     black = (0, 0, 0)
     red = (255, 0, 0)
@@ -380,7 +364,7 @@ def instructions():
         state = 0
         return
 
-    pygame.display.update()
+    pygame.display.update()'''
 
 
 def pause():
@@ -456,9 +440,6 @@ def is_in_log(x, y, position):
         return False
 
 
-previous_position_log = 0
-
-
 def update_game():
     global previous_position_log
     global state
@@ -493,17 +474,17 @@ def update_game():
             if wood.intersects(player.xPlayer, player.yPlayer):
                 position_log = cont
                 previous_position_log = position_log
-                player.moveLikeLog()
+                player.move_like_log = True
 
             cont += 1
 
         player.move(key)
+
         if (player.yPlayer < far_north) and player.first_Time:
             player.yPlayer = far_north - 10
             player.first_Time = False
             far_south = player.yPlayer - 368
             far_north = far_south - 230
-        print("\nFar_south : " + str(far_south))
 
         show_points()
         yB += 0.2
@@ -520,9 +501,7 @@ def update_game():
         for car in cars:
             car.move()
 
-            if car.intersects(player.xPlayer, player.yPlayer):  ## Colidindo com o carro
-                print("fsgfggdfgdf")
-                play_music(music_game_over, 1)
+            if car.intersects(player.xPlayer, player.yPlayer):
                 state = 4
 
         if not is_in_log(player.xPlayer, player.yPlayer, position_log):
@@ -530,15 +509,12 @@ def update_game():
 
         if (player.yPlayer < far_south) and (player.yPlayer > far_north):
             if previous_position_log == position_log:
-                if (player.yPlayer < far_south) and (player.yPlayer > far_north):
-                    if not is_in_log(player.xPlayer, player.yPlayer, position_log):
-                        play_music(music_game_over, 1)
-                        state = 4
+                if not is_in_log(player.xPlayer, player.yPlayer, position_log):
+                    state = 4
 
         pressed = pygame.key.get_pressed()
 
         if pressed[pygame.K_p]:
-            pygame.mixer.music.stop()
             pause()
 
         if far_north < 0:
@@ -551,10 +527,12 @@ def update_game():
 def game_over():
     global state
     global player
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             state = 5
             return
+
     white = (255, 255, 255)
     red = (255, 0, 0)
     screen.fill(white)
@@ -580,7 +558,6 @@ def game_over():
         return
 
     if pressed[pygame.K_m]:
-        play_music(music_menu, -1)
         state = 0
         return
 
@@ -593,14 +570,12 @@ def finish():
 
 
 '''0: menu / 1: instructions / 2: game / 3: pause / 4: game_over / 5: finish'''
-'''state = 0'''
 
-play_music(music_menu, -1)
 while not done:
     if state == 0:
         menu()
-    elif state == 1:
-        instructions()
+        '''elif state == 1:
+        instructions()'''
     elif state == 2:
         pygame.mixer.music.stop()
         update_game()
@@ -610,5 +585,3 @@ while not done:
         game_over()
     elif state == 5:
         finish()
-
-    clock.tick(10)
