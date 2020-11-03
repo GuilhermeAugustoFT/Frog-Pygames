@@ -10,6 +10,7 @@ class Player:
         self.yPlayer = 300 - 20
         self.speed = 0.5
         self.move_like_log = False
+        self.first_Time = True
 
     def moveLikeLog(self):
         self.move_like_log = True
@@ -456,6 +457,7 @@ def update_game():
     initialize_woods()
     far_north = 35
     far_south = 249
+
     position_log = 0
     while state == 2:
         if is_quit():
@@ -482,7 +484,12 @@ def update_game():
             cont += 1
 
         player.move(key)
-        print("Player: " + str(player.yPlayer) + " " + str(far_south) + "e " + str(far_north))
+        if(player.yPlayer < far_north) and player.first_Time:
+            player.yPlayer = far_north - 10
+            player.first_Time = False
+            far_south = player.yPlayer - 368
+            far_north = far_south - 230
+        print("\nFar_south : " + str(far_south))
 
         show_points()
         yB += 0.2
@@ -521,9 +528,11 @@ def update_game():
             pygame.mixer.music.stop()
             pause()
 
-        if far_south > h: ## Ainda precisa corrigir
-            far_south = far_south - h
-            far_north = 35
+        if far_north < 0:
+            player.first_Time = True
+
+
+
 
         clock.tick(200)
         pygame.display.update()
