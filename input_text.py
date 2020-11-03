@@ -33,14 +33,14 @@ def login():
         nome = input("\nDigite um nome: ")
         nickname = input("Digite um nickname: ")
         senha = input("Digite uma senha: ")
-        json_player = json.dumps({"nome": nome, "senha": senha, "nickname": nickname, "pontuacao": 100})
+        json_player = json.dumps({"nome": nome, "senha": senha, "nickname": nickname[0:10], "pontuacao": 100})
         response = requests.post("http://localhost:5000/api/insertPlayer", json=json_player)
-        '''json_string = json.dumps(response.json())
-        response_dict = json.loads(json_string)'''
+        json_string = json.dumps(response.json())
+        response_dict = json.loads(json_string)
 
-        '''if response_dict['message'] == 500:
+        if response_dict['message'] == 500:
             print("\nNome de usuário já existente! Tente outro")
-            login()'''
+            login()
 
         login()
     else:
@@ -90,8 +90,8 @@ def main():
                 if active:
                     ## Usuario apertou enter
                     if event.key == pg.K_RETURN:
-                        print(text)
-                        requests.put("http:localhost:5000/api/updatePlayer", json={"nome": nome, "nickname": text})
+                        json_player = json.dumps({"nome": nome, "nickname": text})
+                        requests.put("http://localhost:5000/api/updatePlayer", json=json_player)
                         pg.quit()
                         os.system('python main.py')
 

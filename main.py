@@ -1,5 +1,7 @@
 import pygame
 import random
+import requests
+import json
 
 
 class Player:
@@ -85,7 +87,7 @@ class Wood:
     def move(self):
         if self.y > h:
             self.y -= h
-            self.x += random.randint(0, 4) * 10
+            self.x += random.randint(0, 4) * 7
 
         self.y += 0.2
         if self.x == 490:
@@ -102,8 +104,8 @@ class Wood:
         screen.blit(imgWood, (self.x, self.y))
 
     def intersects(self, x_player, y_player):
-        if (y_player <= self.y + 10) and (y_player >= self.y - 25):
-            if (x_player >= self.x - 22) and (x_player <= self.x + 50):
+        if (y_player <= self.y + 10) and (y_player >= self.y - 35):
+            if (x_player >= self.x - 22) and (x_player <= self.x + 53):
                 return True
 
 
@@ -147,6 +149,11 @@ state = 0
 
 ## Clock
 clock = pygame.time.Clock()
+
+## API
+response = None
+json_string = None
+response_dict = None
 
 
 def play_music(music, loops):
@@ -280,6 +287,10 @@ def menu():
     global state
     global yB
     global yB2
+    global player
+    yB = 0
+    yB2 = 0
+    player = Player()
     while True:
         black = (0, 0, 0)
         if yB2 > 0:
@@ -303,7 +314,7 @@ def menu():
         font = pygame.font.Font('machine_gunk.ttf', 70)
         title = font.render('Frogger Game', True, black)
         font = pygame.font.Font('machine_gunk.ttf', 20)
-        sub_title = font.render('Press g for play !', True, black)
+        sub_title = font.render('Pressione [g] para jogar !', True, black)
         tr_title = title.get_rect()
         tr_sub_title = sub_title.get_rect()
         tr_title.center = (w // 2, h // 2 - 50)
@@ -330,7 +341,7 @@ def menu():
             return
 
         pygame.display.update()
-        clock.tick(500)
+        clock.tick(200)
 
 
 ## Precisamos fazer a tela de help e ajuda
@@ -370,7 +381,7 @@ def menu():
 def pause():
     red = (255, 0, 0)
     font = pygame.font.Font('machine_gunk.ttf', 18)
-    text_back = font.render('Press ESC to resume', True, red)
+    text_back = font.render('Pressione [esc] para voltar ao jogo', True, red)
     white = (255, 255, 255)
     color = white
     while True:
@@ -380,7 +391,7 @@ def pause():
         font = pygame.font.Font('machine_gunk.ttf', 60)
         text_instructions = font.render('Paused', True, white)
         font = pygame.font.Font('machine_gunk.ttf', 18)
-        text_menu = font.render('Press M to back to menu', True, color)
+        text_menu = font.render('Pressione [m] para voltar ao menu', True, color)
         tr_text = text_instructions.get_rect()
         tr_back = text_back.get_rect()
         tr_menu = text_menu.get_rect()
@@ -399,9 +410,8 @@ def pause():
 
         if pressed[pygame.K_DOWN]:
             color = red
-            play_music(music_paused, 1)
-            text_back = font.render('Press ESC to resume', True, white)
-            text_menu = font.render('Press M to back to menu', True, color)
+            text_back = font.render('Pressione [esc] para voltar ao jogo', True, white)
+            text_menu = font.render('Pressione [m] para voltar ao menu', True, color)
             tr_back = text_back.get_rect()
             tr_menu = text_menu.get_rect()
             tr_back.center = (w // 2, h // 2 - 100)
@@ -411,9 +421,8 @@ def pause():
 
         if pressed[pygame.K_UP]:
             color = white
-            play_music(music_paused, 1)
-            text_back = font.render('Press ESC to resume', True, red)
-            text_menu = font.render('Press M to back to menu', True, color)
+            text_back = font.render('Pressione [esc] para voltar ao jogo', True, red)
+            text_menu = font.render('Pressione [m] para voltar ao menu', True, color)
             tr_back = text_back.get_rect()
             tr_menu = text_menu.get_rect()
             tr_back.center = (w // 2, h // 2 - 100)
@@ -507,6 +516,15 @@ def update_game():
         if not is_in_log(player.xPlayer, player.yPlayer, position_log):
             player.move_like_log = False
 
+        cont = 0
+        for wood in woods:
+            if wood.intersects(player.xPlayer, player.yPlayer):
+                position_log = cont
+                previous_position_log = position_log
+                player.move_like_log = True
+
+            cont += 1
+
         if (player.yPlayer < far_south) and (player.yPlayer > far_north):
             if previous_position_log == position_log:
                 if not is_in_log(player.xPlayer, player.yPlayer, position_log):
@@ -534,17 +552,43 @@ def game_over():
             return
 
     white = (255, 255, 255)
+    black = (0, 0, 0)
     red = (255, 0, 0)
     screen.fill(white)
     font = pygame.font.Font('machine_gunk.ttf', 50)
     text = font.render('Game Over', True, red)
     font = pygame.font.Font('machine_gunk.ttf', 20)
-    text2 = font.render('Press c to play again or m for go to menu', True, red)
+    txt_highscores = font.render('Highscores', True, black)
+    user1 = font.render(response_dict[0]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
+    user2 = font.render(response_dict[1]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
+    user3 = font.render(response_dict[2]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
+    user4 = font.render(response_dict[3]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
+    player = font.render("Sua pontuacao: " + str(int(points)), True, black)
+    font = pygame.font.Font('machine_gunk.ttf', 18)
+    text2 = font.render('Pressione [c] para jogar novamente ou [m] para ir ao menu', True, red)
     text_rect = text.get_rect()
+    tr_highscores = txt_highscores.get_rect()
+    tr_player = player.get_rect()
+    tr_user1 = user1.get_rect()
+    tr_user2 = user2.get_rect()
+    tr_user3 = user3.get_rect()
+    tr_user4 = user4.get_rect()
     text_rect2 = text2.get_rect()
-    text_rect.center = (w // 2, h // 2 - 50)
-    text_rect2.center = (w // 2, h // 2 + 50)
+    text_rect.center = (w // 2, h // 2 - 200)
+    tr_highscores.center = (w // 2, h // 2 - 130)
+    tr_player.center = (w // 2, h // 2 + 80)
+    tr_user1.center = (w // 2, h // 2 - 80)
+    tr_user2.center = (w // 2, h // 2 - 50)
+    tr_user3.center = (w // 2, h // 2 - 20)
+    tr_user4.center = (w // 2, h // 2 + 10)
+    text_rect2.center = (w // 2, h // 2 + 150)
     screen.blit(text, text_rect)
+    screen.blit(txt_highscores, tr_highscores)
+    screen.blit(player, tr_player)
+    screen.blit(user1, tr_user1)
+    screen.blit(user2, tr_user2)
+    screen.blit(user3, tr_user3)
+    screen.blit(user4, tr_user4)
     screen.blit(text2, text_rect2)
     pressed = pygame.key.get_pressed()
 
@@ -579,6 +623,9 @@ while not done:
     elif state == 2:
         pygame.mixer.music.stop()
         update_game()
+        response = requests.get("http://localhost:5000/api/getPlayers")
+        json_string = json.dumps(response.json())
+        response_dict = json.loads(json_string)
     elif state == 3:
         pause()
     elif state == 4:
