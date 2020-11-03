@@ -1,4 +1,6 @@
 import pygame
+import time
+from typing import Type
 
 
 class Player:
@@ -7,16 +9,17 @@ class Player:
         self.xPlayer = w / 2 - 20
         self.yPlayer = 300 - 20
         self.speed = 0.5
+        self.move_like_log = False
 
     def moveLikeLog(self):
-
-        if self.xPlayer == 490:
-            self.xPlayer = -self.x + 470
-
-        self.xPlayer += self.speed
+        self.move_like_log = True
 
     def move(self, pressed):
         global points
+
+        if self.move_like_log == True:
+            self.xPlayer += 0.5
+
         if pressed[pygame.K_UP]:
             self.yPlayer -= 0.7
 
@@ -67,7 +70,7 @@ class Car:
 
     def intersects(self, x_player, y_player):
         if (y_player <= self.y + 20) and (y_player >= self.y - 20):
-            if (x_player >= self.x - 20) and (x_player <= self.x + 20):
+            if (x_player >= self.x - 25) and (x_player <= self.x + 30):
                 return True
 
 
@@ -98,7 +101,7 @@ class Wood:
 
     def intersects(self, x_player, y_player):
         if (y_player <= self.y + 10) and (y_player >= self.y - 25):
-            if (x_player >= self.x - 20) and (x_player <= self.x + 20):
+            if (x_player >= self.x - 22) and (x_player <= self.x + 40):
                 return True
 
 
@@ -162,76 +165,65 @@ def initialize_woods():
     ## Linha 1
     for i in range(0, 16):
         x += 100
-        woods_aux.append(Wood(x, 255))
+        woods_aux.append(Wood(x, 248))
 
     x = 0
 
     ## Linha 2
     for i in range(0, 16):
         x += 100
-        woods_aux.append(Wood(x, 235))
+        woods_aux.append(Wood(x, 225))
 
     x = 200
 
     ## Linha 3
     for i in range(0, 16):
         x += 100
-        woods_aux.append(Wood(x, 215))
+        woods_aux.append(Wood(x, 200))
 
     x = 300
 
     ## Linha 4
     for i in range(0, 16):
         x += 100
-        woods_aux.append(Wood(x, 195))
+        woods_aux.append(Wood(x, 175))
 
     x = 150
 
     ## Linha 5
     for i in range(0, 16):
         x += 100
-        woods_aux.append(Wood(x, 175))
+        woods_aux.append(Wood(x, 150))
 
     x = 70
 
     ## Linha 6
     for i in range(0, 16):
         x += 120
-        woods_aux.append(Wood(x, 155))
+        woods_aux.append(Wood(x, 125))
 
     x = 120
 
     ## Linha 7
     for i in range(0, 16):
         x += 80
-        woods_aux.append(Wood(x, 135))
+        woods_aux.append(Wood(x, 100))
 
     x = 180
 
     ## Linha 8
     for i in range(0, 16):
         x += 120
-        woods_aux.append(Wood(x, 115))
+        woods_aux.append(Wood(x, 75))
 
     x = 140
 
     ## Linha 9
     for i in range(0, 16):
         x += 110
-        woods_aux.append(Wood(x, 95))
+        woods_aux.append(Wood(x, 45))
 
     x = 150
-
-    ## Linha 10
-    for i in range(0, 16):
-        x += 100
-    woods_aux.append(Wood(x, 75))
-
-    ## Linha 11
-    for i in range(0, 16):
-        x += 100
-    woods_aux.append(Wood(x, 20))
-
     woods = woods_aux
 
 
@@ -256,7 +248,7 @@ def initialize_cars():
     ## Linha 3
     for i in range(0, 16):
         x += 180
-        cars_aux.append(Car(x, 358))
+        cars_aux.append(Car(x, 365))
 
     x = 0
 
@@ -272,6 +264,9 @@ def is_quit():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
+
+
+clock = pygame.time.Clock()
 
 
 def menu():
@@ -336,6 +331,7 @@ def menu():
             return
 
         pygame.display.update()
+        clock.tick(200)
 
 
 def instructions():
@@ -436,19 +432,19 @@ def pause():
         pygame.display.update()
 
 
-esta_no_tronco = False
+def is_in_log(x, y, position):
+    global woods
+    if woods[position].intersects(x, y):
+        return True
+    else:
+        return False
 
 
-'''def esta_no_tronco(x, y):
-    for wood in woods:
-        if wood.intersects(x, y):
-            return True'''
-
-
+previous_position_log = 0
 
 
 def update_game():
-    global esta_no_tronco
+    global previous_position_log
     global state
     global yB
     global yB2
@@ -456,9 +452,11 @@ def update_game():
     points = 0
     yB = 0
     yB2 = 0 - h
-    waterRange = 230
     initialize_cars()
     initialize_woods()
+    far_north = 35
+    far_south = 249
+    position_log = 0
     while state == 2:
         if is_quit():
             state = 5
@@ -471,12 +469,24 @@ def update_game():
         screen.blit(background, (0, yB2))
         key = pygame.key.get_pressed()
         screen.blit(background, (0, yB))
+
+        cont = 0
+        for wood in woods:
+            wood.move()
+
+            if wood.intersects(player.xPlayer, player.yPlayer):
+                position_log = cont
+                previous_position_log = position_log
+                player.moveLikeLog()
+
+            cont += 1
+
         player.move(key)
+        print("Player: " + str(player.yPlayer) + " " + str(far_south) + "e " + str(far_north))
 
         show_points()
         yB += 0.2
         yB2 += 0.2
-        waterRange += 0.2
 
         player.yPlayer += 0.2
 
@@ -488,25 +498,20 @@ def update_game():
         for car in cars:
             car.move()
 
-            if car.intersects(player.xPlayer, player.yPlayer):
+            if car.intersects(player.xPlayer, player.yPlayer):  ## Colidindo com o carro
+                print("fsgfggdfgdf")
                 play_music(music_game_over, 1)
                 state = 4
 
-        for wood in woods:
-            wood.move()
+        if not is_in_log(player.xPlayer, player.yPlayer, position_log):
+            player.move_like_log = False
 
-            if wood.intersects(player.xPlayer, player.yPlayer):
-                player.moveLikeLog()
-                esta_no_tronco = True
-            else:
-                esta_no_tronco = False
-
-            if waterRange - 230 < player.yPlayer < waterRange + 20:  ## Aqui a gnt precisa saber se o sapo está na area com agua, não consegui pensar em como fazer isso
-                if not esta_no_tronco:
-                    play_music(music_game_over, 1)
-                    state = 4
-
-
+        if (player.yPlayer < far_south) and (player.yPlayer > far_north):
+            if previous_position_log == position_log:
+                if (player.yPlayer < far_south) and (player.yPlayer > far_north):
+                    if not is_in_log(player.xPlayer, player.yPlayer, position_log):
+                        play_music(music_game_over, 1)
+                        state = 4
 
         pressed = pygame.key.get_pressed()
 
@@ -514,6 +519,14 @@ def update_game():
             pygame.mixer.music.stop()
             pause()
 
+        far_south += 0.2
+        far_north += 0.2
+
+        if far_south > h and far_north > h:
+            far_south = 249
+            far_north = 35
+
+        clock.tick(200)
         pygame.display.update()
 
 
@@ -579,3 +592,5 @@ while not done:
         game_over()
     elif state == 5:
         finish()
+
+    clock.tick(10)
