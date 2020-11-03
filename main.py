@@ -101,7 +101,7 @@ class Wood:
 
     def intersects(self, x_player, y_player):
         if (y_player <= self.y + 10) and (y_player >= self.y - 25):
-            if (x_player >= self.x - 22) and (x_player <= self.x + 40):
+            if (x_player >= self.x - 22) and (x_player <= self.x + 50):
                 return True
 
 
@@ -487,6 +487,8 @@ def update_game():
         show_points()
         yB += 0.2
         yB2 += 0.2
+        far_south += 0.2
+        far_north += 0.2
 
         player.yPlayer += 0.2
 
@@ -519,11 +521,8 @@ def update_game():
             pygame.mixer.music.stop()
             pause()
 
-        far_south += 0.2
-        far_north += 0.2
-
-        if far_south > h and far_north > h:
-            far_south = 249
+        if far_south > h: ## Ainda precisa corrigir
+            far_south = far_south - h
             far_north = 35
 
         clock.tick(200)
