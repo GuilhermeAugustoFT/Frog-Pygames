@@ -117,7 +117,7 @@ def main():
     ## Prepara tela
     screen = pygame.display.set_mode((400, 300))
     white = (255, 255, 255)
-    font = pygame.font.Font('machine_gunk.ttf', 40)
+    font = pygame.font.Font('machine_gunk.ttf', 20)
     pygame.display.set_caption('Digite seu nome')
     input_box = pygame.Rect(100, 130, 140, 32)  ## Formato do input
     color_inactive = pygame.Color('lightskyblue3')  ## Cor padrao do input
@@ -155,8 +155,9 @@ def main():
                 if active:
                     ## Usuario apertou enter
                     if event.key == pygame.K_RETURN:
-                        json_player = json.dumps({"nome": nome, "nickname": text})
-                        requests.put("http://localhost:5000/api/updatePlayer", json=json_player)
+                        user = json.dumps({"nome": nome, "nickname": text})
+                        requests.put("http://localhost:5000/api/updatePlayer", json=user)
+                        return
                         pygame.quit()
 
 
@@ -168,7 +169,9 @@ def main():
                         text += event.unicode
 
         ## txt_surface eh um componente texto com conteudo de text
-        txt_surface = font.render(text, True, color)
+        pygame.font.init()
+        font_surface = pygame.font.Font('machine_gunk.ttf', 20)
+        txt_surface = font_surface.render(text, True, color)
         width = max(200, txt_surface.get_width() + 10)
         input_box.w = width
         ## Desenha o texto
@@ -191,10 +194,7 @@ def login():
         json_string = json.dumps(response.json())
         response_dict = json.loads(json_string)
         if response_dict['message'] == 200:
-            response = requests.get("http://localhost:5000/api/updatePlayer/" + nome)
-            json_string = json.dumps(response.json())
-            response_dict = json.loads(json_string)
-            '''text = response_dict['nickname']'''
+
             return
         else:
             print("\nNome ou senha incorretos!")
@@ -526,7 +526,7 @@ def pause():
             color = red
             text_back = font.render('Pressione [esc] para voltar ao jogo', True, white)
             text_menu = font.render('Pressione [m] para voltar ao menu', True, color)
-            tr_back = text_back.get_rect()
+            tr_back= text_back.get_rect()
             tr_menu = text_menu.get_rect()
             tr_back.center = (w // 2, h // 2 - 100)
             tr_menu.center = (w // 2, h // 2 - 50)
@@ -626,6 +626,9 @@ def update_game():
 
             if car.intersects(player.xPlayer, player.yPlayer):
                 state = 4
+                user = json.dumps({"nome": nome, "pontuacao": points})
+                print(nome)
+                requests.put("http://localhost:5000/api/updatePontuacao", json=user)
 
         if not is_in_log(player.xPlayer, player.yPlayer, position_log):
             player.move_like_log = False
@@ -643,6 +646,9 @@ def update_game():
             if previous_position_log == position_log:
                 if not is_in_log(player.xPlayer, player.yPlayer, position_log):
                     state = 4
+                    user = json.dumps({"nome": nome, "pontuacao": points})
+                    print(nome)
+                    requests.put("http://localhost:5000/api/updatePontuacao", json=user)
 
         pressed = pygame.key.get_pressed()
 
@@ -657,6 +663,8 @@ def update_game():
 
 
 def game_over():
+    global nome
+    global points
     global state
     global player
 
@@ -664,6 +672,8 @@ def game_over():
         if event.type == pygame.QUIT:
             state = 5
             return
+
+
 
     white = (255, 255, 255)
     black = (0, 0, 0)
@@ -674,9 +684,9 @@ def game_over():
     font = pygame.font.Font('machine_gunk.ttf', 20)
     txt_highscores = font.render('Highscores', True, black)
     user1 = font.render(response_dict[0]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
-    user2 = font.render(response_dict[1]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
-    user3 = font.render(response_dict[2]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
-    user4 = font.render(response_dict[3]['nickname'].ljust(10, ' ') + "  " + str(response_dict[0]['pontuacao']), True, black)
+    user2 = font.render(response_dict[1]['nickname'].ljust(10, ' ') + "  " + str(response_dict[1]['pontuacao']), True, black)
+    user3 = font.render(response_dict[2]['nickname'].ljust(10, ' ') + "  " + str(response_dict[2]['pontuacao']), True, black)
+    user4 = font.render(response_dict[3]['nickname'].ljust(10, ' ') + "  " + str(response_dict[3]['pontuacao']), True, black)
     player = font.render("Sua pontuacao: " + str(int(points)), True, black)
     font = pygame.font.Font('machine_gunk.ttf', 18)
     text2 = font.render('Pressione [c] para jogar novamente ou [m] para ir ao menu', True, red)
