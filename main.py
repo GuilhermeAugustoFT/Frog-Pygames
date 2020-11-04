@@ -1,7 +1,8 @@
-import pygame
-import random
-import requests
 import json
+import random
+
+import pygame
+import requests
 
 
 class Player:
@@ -107,6 +108,119 @@ class Wood:
         if (y_player <= self.y + 10) and (y_player >= self.y - 35):
             if (x_player >= self.x - 22) and (x_player <= self.x + 53):
                 return True
+
+nome = ""
+
+
+def main():
+    pygame.init()
+    ## Prepara tela
+    screen = pygame.display.set_mode((400, 300))
+    white = (255, 255, 255)
+    font = pygame.font.Font('machine_gunk.ttf', 40)
+    pygame.display.set_caption('Digite seu nome')
+    input_box = pygame.Rect(100, 130, 140, 32)  ## Formato do input
+    color_inactive = pygame.Color('lightskyblue3')  ## Cor padrao do input
+    color_active = pygame.Color('dodgerblue2')  ## Cor utilizado quando usuario clicar no input
+    fontTitle = pygame.font.Font('machine_gunk.ttf', 40)
+    title = fontTitle.render('Insira seu nome', True, white)
+    titleRect = title.get_rect()
+    titleRect.center = (200, 100)
+    fontSubtitle = pygame.font.Font('machine_gunk.ttf', 30)
+    subtitle = fontSubtitle.render('Pressione [Enter] para jogar', True, white)
+    subtitleRect = subtitle.get_rect()
+    subtitleRect.center = (200, 200)
+    color = color_inactive
+    active = False
+    text = ''  ## Texto que o usuario digitou
+    done = False
+
+    while not done:
+        screen.blit(title, titleRect)
+        screen.blit(subtitle, subtitleRect)
+        for event in pygame.event.get():
+            ## Se e um evento de fechamento de janela
+            if event.type == pygame.QUIT:
+                done = True
+            ## Usuario clicou
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                ## Usuario clicou no input especificamente
+                if input_box.collidepoint(event.pos):
+                    active = not active  ## Boolean e setado para depois mudar cor do input
+                else:
+                    active = False
+                # Change the current color of the input box.
+                color = color_active if active else color_inactive  ## Se active e true, muda cor do input
+            if event.type == pygame.KEYDOWN:
+                if active:
+                    ## Usuario apertou enter
+                    if event.key == pygame.K_RETURN:
+                        json_player = json.dumps({"nome": nome, "nickname": text})
+                        requests.put("http://localhost:5000/api/updatePlayer", json=json_player)
+                        pygame.quit()
+
+
+                    ## Usuario apagou uma letra
+                    elif event.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        ## Usuario digitou uma letra
+                        text += event.unicode
+
+        ## txt_surface eh um componente texto com conteudo de text
+        txt_surface = font.render(text, True, color)
+        width = max(200, txt_surface.get_width() + 10)
+        input_box.w = width
+        ## Desenha o texto
+        screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
+        ## Desenha o input
+        pygame.draw.rect(screen, color, input_box, 2)
+
+        ## Atualizar tela
+        pygame.display.flip()
+
+def login():
+    global nome
+    res = input("\nJá possui conta? (S / N) ")
+    if res == "S":
+        print("\n----- Login -----")
+        nome = input("\nDigite seu nome: ")
+        senha = input("Digite sua senha: ")
+        json_player = json.dumps({"nome": nome, "senha": senha})
+        response = requests.post("http://localhost:5000/api/autenticatePlayer", json=json_player)
+        json_string = json.dumps(response.json())
+        response_dict = json.loads(json_string)
+        if response_dict['message'] == 200:
+            response = requests.get("http://localhost:5000/api/updatePlayer/" + nome)
+            json_string = json.dumps(response.json())
+            response_dict = json.loads(json_string)
+            '''text = response_dict['nickname']'''
+            return
+        else:
+            print("\nNome ou senha incorretos!")
+            login()
+    elif res == "N":
+        print("\n----- Registro de Jogador -----")
+        nome = input("\nDigite um nome: ")
+        nickname = input("Digite um nickname: ")
+        senha = input("Digite uma senha: ")
+        json_player = json.dumps({"nome": nome, "senha": senha, "nickname": nickname[0:10], "pontuacao": 100})
+        response = requests.post("http://localhost:5000/api/insertPlayer", json=json_player)
+        json_string = json.dumps(response.json())
+        response_dict = json.loads(json_string)
+
+        if response_dict['message'] == 500:
+            print("\nNome de usuário já existente! Tente outro")
+            login()
+
+        login()
+    else:
+        print("\nDigite S ou N")
+        login()
+
+print("\nBem-vindo ao Frogger Game")
+login()
+main()
 
 
 ## Background
