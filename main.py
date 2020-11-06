@@ -264,6 +264,9 @@ state = 0
 ## Clock
 clock = pygame.time.Clock()
 
+## Difficulty
+difficulty = 0
+
 ## API
 response = None
 json_string = None
@@ -569,6 +572,7 @@ def update_game():
     global yB
     global yB2
     global points
+    global difficulty
     points = 0
     yB = 0
     yB2 = 0 - h
@@ -577,6 +581,7 @@ def update_game():
     far_north = 35
     far_south = 249
     position_log = 0
+    difficulty = 0
     while state == 2:
         if is_quit():
             state = 5
@@ -610,11 +615,11 @@ def update_game():
             far_north = far_south - 230
 
         show_points()
-        yB += 0.2
-        yB2 += 0.2
-        far_south += 0.2
-        far_north += 0.2
-        player.yPlayer += 0.2
+        yB += 0.2 + difficulty * 200
+        yB2 += 0.2 + difficulty * 200
+        far_south += 0.2 + difficulty * 200
+        far_north += 0.2 + difficulty * 200
+        player.yPlayer += 0.2 + difficulty * 200
 
         if player.yPlayer > h:
             play_music(music_game_over, 1)
@@ -623,6 +628,8 @@ def update_game():
 
         for car in cars:
             car.move()
+            car.speed += difficulty / 2
+            car.y += difficulty * 200
 
             if car.intersects(player.xPlayer, player.yPlayer):
                 state = 4
@@ -635,6 +642,7 @@ def update_game():
 
         cont = 0
         for wood in woods:
+            wood.y += difficulty * 200
             if wood.intersects(player.xPlayer, player.yPlayer):
                 position_log = cont
                 previous_position_log = position_log
@@ -646,9 +654,13 @@ def update_game():
             if previous_position_log == position_log:
                 if not is_in_log(player.xPlayer, player.yPlayer, position_log):
                     state = 4
-                    user = json.dumps({"nome": nome, "pontuacao": points})
-                    print(nome)
-                    requests.put("http://localhost:5000/api/updatePontuacao", json=user)
+                    response = requests.get("http://localhost:5000/api/getPlayer/" + nome)
+                    json_string = json.dumps(response.json())
+                    response_dict = json.loads(json_string)
+
+                    if response_dict['pontuacao'] < points:
+                        user = json.dumps({"nome": nome, "pontuacao": points})
+                        requests.put("http://localhost:5000/api/updatePontuacao", json=user)
 
         pressed = pygame.key.get_pressed()
 
@@ -657,6 +669,13 @@ def update_game():
 
         if far_north < 0:
             player.first_Time = True
+
+        if points > 50:
+            difficulty = 0.02 / 40
+        elif points > 150:
+            difficulty = 0.02 / 38
+        elif points > 500:
+            difficulty = 0.02 / 36
 
         clock.tick(200)
         pygame.display.update()
@@ -672,8 +691,6 @@ def game_over():
         if event.type == pygame.QUIT:
             state = 5
             return
-
-
 
     white = (255, 255, 255)
     black = (0, 0, 0)
