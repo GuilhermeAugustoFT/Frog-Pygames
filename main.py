@@ -432,12 +432,21 @@ def menu():
         title = font.render('Frogger Game', True, black)
         font = pygame.font.Font('machine_gunk.ttf', 20)
         sub_title = font.render('Pressione [g] para jogar !', True, black)
+        font = pygame.font.Font('machine_gunk.ttf', 20)
+        help = font.render('Pressione [h] para saber os controles!', True, black)
+        about = font.render('Pressione [s] para saber mais sobre o projeto!', True, black)
+        tr_about = about.get_rect()
         tr_title = title.get_rect()
         tr_sub_title = sub_title.get_rect()
+        tr_help = help.get_rect()
         tr_title.center = (w // 2, h // 2 - 50)
         tr_sub_title.center = (w // 2, h // 2)
+        tr_help.center = (w // 2, h // 1.8)
+        tr_about.center = (w // 2, h // 1.6)
         screen.blit(title, tr_title)
         screen.blit(sub_title, tr_sub_title)
+        screen.blit(help, tr_help)
+        screen.blit(about, tr_about)
 
         pressed = pygame.key.get_pressed()
 
@@ -449,7 +458,11 @@ def menu():
             state = 2
             return
 
-        if pressed[pygame.K_i]:
+        if pressed[pygame.K_s]:
+            state = 6
+            return
+
+        if pressed[pygame.K_h]:
             state = 1
             return
 
@@ -462,15 +475,15 @@ def menu():
 
 
 ## Precisamos fazer a tela de help e ajuda
-'''def instructions():
+def instructions():
     global state
     black = (0, 0, 0)
     red = (255, 0, 0)
     screen.fill(black)
-    font = pygame.font.Font('freesansbold.ttf', 25)
-    text_instructions1 = font.render('-> Use the arrows to move', True, red)
-    text_instructions2 = font.render('-> Use p to pause the game', True, red)
-    font = pygame.font.Font('freesansbold.ttf', 18)
+    font = pygame.font.Font('machine_gunk.ttf', 25)
+    text_instructions1 = font.render('- Use as setas para se mover', True, red)
+    text_instructions2 = font.render('- Pressione [p] para pausar o jogo', True, red)
+    font = pygame.font.Font('machine_gunk.ttf', 18)
     text_exit = font.render('Press m to back to menu', True, red)
     tr_text1 = text_instructions1.get_rect()
     tr_text2 = text_instructions2.get_rect()
@@ -492,8 +505,51 @@ def menu():
         state = 0
         return
 
-    pygame.display.update()'''
+    pygame.display.update()
 
+def about():
+    global state
+    black = (0, 0, 0)
+    red = (255, 0, 0)
+    screen.fill(black)
+    font = pygame.font.Font('machine_gunk.ttf', 25)
+    text_about1 = font.render('Jogo inspirado no estilo Frogger', True, red)
+    text_about2 = font.render('Desenvolvido em python para', True, red)
+    text_about3 = font.render('um projeto escolar do COTUCA.', True, red)
+    font = pygame.font.Font('machine_gunk.ttf', 18)
+    text_exit = font.render('Pressione [m] para voltar ao menu', True, red)
+    dev1 = font.render('RA: 19171 - Gabriel Scalese - github: @GabrielVScalese', True, red)
+    dev2 = font.render('RA: 19174 - Guilherme Augusto - github: @GuilhermeAugustoFT', True, red)
+    tr_dev1 = dev1.get_rect()
+    tr_dev2 = dev2.get_rect()
+    tr_text1 = text_about1.get_rect()
+    tr_text2 = text_about2.get_rect()
+    tr_text3 = text_about3.get_rect()
+    tr_exit = text_exit.get_rect()
+    tr_text1.center = (w // 2, h // 2 - 50)
+    tr_text2.center = (w // 2, h // 2)
+    tr_text3.center = (w // 2, h // 1.8)
+    tr_exit.center = (w // 2, h // 1.2)
+    tr_dev1.center = (w // 2, h // 1.6)
+    tr_dev2.center = (w // 2, h // 1.4)
+    screen.blit(text_about1, tr_text1)
+    screen.blit(text_about2, tr_text2)
+    screen.blit(text_about3, tr_text3)
+    screen.blit(text_exit, tr_exit)
+    screen.blit(dev1, tr_dev1)
+    screen.blit(dev2, tr_dev2)
+
+    pressed = pygame.key.get_pressed()
+
+    if is_quit():
+        state = 5
+        return
+
+    if pressed[pygame.K_m]:
+        state = 0
+        return
+
+    pygame.display.update()
 
 def pause():
     red = (255, 0, 0)
@@ -754,13 +810,13 @@ def finish():
     done = True
 
 
-'''0: menu / 1: instructions / 2: game / 3: pause / 4: game_over / 5: finish'''
+'''0: menu / 1: instructions / 2: game / 3: pause / 4: game_over / 5: finish / 6: about'''
 
 while not done:
     if state == 0:
         menu()
-        '''elif state == 1:
-        instructions()'''
+    elif state == 1:
+        instructions()
     elif state == 2:
         pygame.mixer.music.stop()
         update_game()
@@ -773,3 +829,5 @@ while not done:
         game_over()
     elif state == 5:
         finish()
+    elif state == 6:
+        about()
