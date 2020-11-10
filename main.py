@@ -399,6 +399,7 @@ def is_quit():
 
 
 def menu():
+    play_music(music_menu, -10)
     initialize_woods()
     initialize_cars()
     global state
@@ -552,6 +553,7 @@ def about():
     pygame.display.update()
 
 def pause():
+    play_music(music_paused, -1)
     red = (255, 0, 0)
     font = pygame.font.Font('machine_gunk.ttf', 18)
     text_back = font.render('Pressione [esc] para voltar ao jogo', True, red)
@@ -623,6 +625,7 @@ def is_in_log(x, y, position):
 
 
 def update_game():
+    play_music(music_game, -1)
     global previous_position_log
     global state
     global yB
@@ -688,6 +691,7 @@ def update_game():
             car.y += difficulty * 200
 
             if car.intersects(player.xPlayer, player.yPlayer):
+                play_music(music_game_over, 1)
                 state = 4
                 user = json.dumps({"nome": nome, "pontuacao": points})
                 print(nome)
@@ -709,6 +713,7 @@ def update_game():
         if (player.yPlayer < far_south) and (player.yPlayer > far_north):
             if previous_position_log == position_log:
                 if not is_in_log(player.xPlayer, player.yPlayer, position_log):
+                    play_music(music_game_over, 1)
                     state = 4
                     response = requests.get("http://localhost:5000/api/getPlayer/" + nome)
                     json_string = json.dumps(response.json())
@@ -738,6 +743,7 @@ def update_game():
 
 
 def game_over():
+
     global nome
     global points
     global state
@@ -814,6 +820,7 @@ def finish():
 
 while not done:
     if state == 0:
+        pygame.mixer.music.stop()
         menu()
     elif state == 1:
         instructions()
@@ -824,8 +831,10 @@ while not done:
         json_string = json.dumps(response.json())
         response_dict = json.loads(json_string)
     elif state == 3:
+        pygame.mixer.music.stop()
         pause()
     elif state == 4:
+        pygame.mixer.music.stop()
         game_over()
     elif state == 5:
         finish()
